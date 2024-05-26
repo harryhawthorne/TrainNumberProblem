@@ -11,6 +11,7 @@ The aim of the game is to make 10 with the digits.
 
 ## Instructions
 Run `python solver.py <num>`.
+
 If with the four operations it is possible to solve, the steps of the first found solution will be printed.
 If no solution is found `"No solution found"` will be printed. 
 
