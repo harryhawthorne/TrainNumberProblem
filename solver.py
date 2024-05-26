@@ -1,13 +1,13 @@
 import argparse
 
 # Operators available in the train game
-OPERATORS = ['+','-','*','/']
+OPERATORS = ['+','-','*','/','**']
 
 def check_input(value):
     """Check that the argument passed to the script is an integer between 0 and 10,000"""
     try:
         ivalue = int(value)
-    except:
+    except ValueError:
         raise argparse.ArgumentTypeError(f"{value} is an invalid value. Must be an int.")
     
     if ivalue < 0 or ivalue > 10_000:
@@ -19,21 +19,33 @@ def split_digits(num):
     padded_number = f"{num:04}"
     return [int(digit) for digit in padded_number]
 
-def operation(a,b,op):
-    if op == '+':
-        return a+b
-    elif op == '-':
-        return a-b
-    elif op == '*':
-        return a*b
-    elif op == '/':
-        if b != 0:
-            return a/b
-        else:
-            return "Error"
-    else:
+def operation(a, b, op):
+    try:
+        if op == '+':
+            return a + b
+        elif op == '-':
+            return a - b
+        elif op == '*':
+            return a * b
+        elif op == '/':
+            if b != 0:
+                return a / b
+            else:
+                return "Error"
+        elif op == '**':
+            # Handle cases where 0 cannot be raised to a negative power
+            if a == 0 and b < 0:
+                return "Error"
+            # Handle large exponentiation values
+            if a < 0 and not float(b).is_integer():
+                return "Error"
+            result = a ** b
+            if result > 10_000 or result < -10_000 or isinstance(result, complex):
+                return "Error"
+            return result
+    except (OverflowError, ValueError, ZeroDivisionError):
         return "Error"
-
+    return "Error"
 
 def make_ten(numbers, trace=[]):
     """
@@ -52,7 +64,7 @@ def make_ten(numbers, trace=[]):
     # Loop up to the 2nd last element
     for i in range(len(numbers) - 1):
         for op in OPERATORS:
-            result = operation(numbers[i],numbers[i+1], op)
+            result = operation(numbers[i], numbers[i+1], op)
             if result == "Error":
                 continue
 
@@ -69,9 +81,7 @@ def make_ten(numbers, trace=[]):
                 return True
     return False
 
-
 def main():
-
     # Take in an argument: An integer between 0 and 10,000
     parser = argparse.ArgumentParser(description="Process a number between 0 and 10000.")
     parser.add_argument('number', type=check_input, help="An integer between 0 and 10000")
@@ -79,6 +89,6 @@ def main():
     digits = split_digits(args.number)
     if not make_ten(digits):
         print("No solution found")
-    
+
 if __name__ == "__main__":
     main()
