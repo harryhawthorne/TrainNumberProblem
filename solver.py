@@ -1,4 +1,5 @@
 import argparse
+from itertools import combinations
 
 # Operators available in the train game
 OPERATORS = ['+','-','*','/','**']
@@ -14,10 +15,26 @@ def check_input(value):
         raise argparse.ArgumentTypeError(f"{value} is an invalid value. Must be an int between 0 and 10000.")
     return ivalue
 
+def optional_merge(num):
+    """Optional argument to merge digits e.g. treat [1,2,3,4] as [123,4]"""
+    n = len(num)
+    result = []
+
+    # Generate all combinations of split points
+    for r in range(1, n):
+        for split_points in combinations(range(1, n), r):
+            splits = []
+            prev = 0
+            for point in split_points:
+                splits.append(int(num[prev:point]))  # Convert substring to int
+                prev = point
+            splits.append(int(num[prev:]))  # Add the remaining part of the string as an integer
+            result.append(splits)
+    return result
+
 def split_digits(num):
     """Take an input int between 0 and 10,000 and convert it to a list of four int digits"""
-    padded_number = f"{num:04}"
-    return [int(digit) for digit in padded_number]
+    return [int(digit) for digit in num]
 
 def operation(a, b, op):
     try:
@@ -49,8 +66,9 @@ def operation(a, b, op):
 
 def make_ten(numbers, trace=[]):
     """
-    Loop through list of digits in pairs, combine the pair using an operation, pass the new list recursively
-    to the make_ten function until there is only one number left in the list. Check if it is 10. 
+    Loop through list of digits in pairs, combine the pair using an operation, 
+    pass the new list recursively to the make_ten function until there is only 
+    one number left in the list. Check if it is 10.
     """
     if len(numbers) == 1:
         if numbers[0] == 10:
@@ -85,9 +103,25 @@ def main():
     # Take in an argument: An integer between 0 and 10,000
     parser = argparse.ArgumentParser(description="Process a number between 0 and 10000.")
     parser.add_argument('number', type=check_input, help="An integer between 0 and 10000")
+    parser.add_argument('-m', '--merged', action='store_true', help="Use combined characters")
+    
     args = parser.parse_args()
-    digits = split_digits(args.number)
-    if not make_ten(digits):
+    padded_number = f"{args.number:04}"
+    
+    solved = False
+    if args.merged:
+        for digits in optional_merge(padded_number):
+            if make_ten(digits):
+                solved = True
+                if len(digits) != 4:
+                    print(f'Solution used merged digits: {digits}')
+                break
+    else:
+        digits = split_digits(padded_number)
+        if make_ten(digits):
+            solved = True
+            
+    if not solved:  
         print("No solution found")
 
 if __name__ == "__main__":
