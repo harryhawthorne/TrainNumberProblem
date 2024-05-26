@@ -1,16 +1,10 @@
 import argparse
-from itertools import permutations, product
-import logging
 
+# Operators available in the train game
 OPERATORS = ['+','-','*','/']
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
 def check_input(value):
-    """
-    Check that the argument passed to the script is an integer between 0 and 10,000
-    """
+    """Check that the argument passed to the script is an integer between 0 and 10,000"""
     try:
         ivalue = int(value)
     except:
@@ -21,6 +15,7 @@ def check_input(value):
     return ivalue
 
 def split_digits(num):
+    """Take an input int between 0 and 10,000 and convert it to a list of four int digits"""
     padded_number = f"{num:04}"
     return [int(digit) for digit in padded_number]
 
@@ -41,6 +36,10 @@ def operation(a,b,op):
 
 
 def make_ten(numbers, trace=[]):
+    """
+    Loop through list of digits in pairs, combine the pair using an operation, pass the new list recursively
+    to the make_ten function until there is only one number left in the list. Check if it is 10. 
+    """
     if len(numbers) == 1:
         if numbers[0] == 10:
             print(f"Possible!")
@@ -49,18 +48,25 @@ def make_ten(numbers, trace=[]):
                 print(step)
             return True
         return False
+    
+    # Loop up to the 2nd last element
     for i in range(len(numbers) - 1):
         for op in OPERATORS:
             result = operation(numbers[i],numbers[i+1], op)
             if result == "Error":
                 continue
+
+            # Create a copy of the input numbers list to modify
             new_numbers = numbers[:]
+            
+            # Replace the first digit of the pair with the pairs combination, and drop the second digit
             new_numbers[i] = result
-            new_trace = trace + [(f"{numbers[i]} {op} {numbers[i+1]} = {result}")]
             new_numbers = new_numbers[:i+1] + new_numbers[i+2:]
+
+            # Record the current step
+            new_trace = trace + [(f"{numbers[i]} {op} {numbers[i+1]} = {result}")]
             if make_ten(new_numbers, new_trace):
                 return True
-            
     return False
 
 
