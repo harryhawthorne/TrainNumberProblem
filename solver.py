@@ -37,7 +37,7 @@ def operation(a,b,op):
         else:
             return "Error"
     else:
-        return "Invalid operator"
+        return "Error"
 
 
 def make_ten(numbers, trace=[]):
